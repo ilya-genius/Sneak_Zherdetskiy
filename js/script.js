@@ -4,12 +4,11 @@ const ctx = canvas.getContext("2d");
 const ground = new Image();
 ground.src = "img/ground.png";
 
-const foodImg = new Image();
-foodImg.src = "img/food.png";
-
 let box = 32;
-
 let score = 0;
+let headColor = "#00ff00"; // Default head color
+let bodyColor = "#ff0000"; // Default body color
+let foodImageSrc = "img/food.png"; // Default food image
 
 let food = {
   x: Math.floor((Math.random() * 17 + 1)) * box,
@@ -21,6 +20,9 @@ snake[0] = {
   x: 9 * box,
   y: 10 * box
 };
+
+let foodImg = new Image(); // Добавлено изображение для еды
+foodImg.src = foodImageSrc;
 
 let game; // Объявление переменной для интервала
 
@@ -39,6 +41,28 @@ function direction(event) {
     dir = "down";
 }
 
+function initializeCanvasAndFood() {
+  const ground = new Image();
+  ground.src = "img/ground.png";
+  ground.onload = function () {
+    drawGame();
+  };
+}
+
+// Вызываем функцию инициализации сразу после загрузки страницы
+window.onload = initializeCanvasAndFood;
+
+document.getElementById("headColor").addEventListener("input", function () {
+  headColor = this.value;
+  initializeCanvasAndFood();
+});
+
+document.getElementById("foodImage").addEventListener("change", function () {
+  foodImageSrc = this.value; // Обновляем значение еды при изменении в выпадающем списке
+  foodImg.src = foodImageSrc; // Обновляем изображение еды
+  initializeCanvasAndFood();
+});
+
 function eatTail(head, arr) {
   for (let i = 0; i < arr.length; i++) {
     if (head.x == arr[i].x && head.y == arr[i].y)
@@ -52,7 +76,7 @@ function drawGame() {
   ctx.drawImage(foodImg, food.x, food.y);
 
   for (let i = 0; i < snake.length; i++) {
-    ctx.fillStyle = i == 0 ? "green" : "yellow";
+    ctx.fillStyle = i == 0 ? headColor : bodyColor;
     ctx.fillRect(snake[i].x, snake[i].y, box, box);
   }
 
@@ -110,38 +134,65 @@ function drawGame() {
 }
 
 function restartGame() {
-  const userWantsRestart = confirm("Хотите начать заново?");
-  if (userWantsRestart) {
-    // Сброс переменных
-    score = 0;
-    snake = [];
-    snake[0] = {
-      x: 9 * box,
-      y: 10 * box
-    };
+  initializeGame();
+}
 
-    dir = undefined;
+function startGame() {
+  bodyColor = document.getElementById("bodyColor").value;
 
-    food = {
-      x: Math.floor((Math.random() * 17 + 1)) * box,
-      y: Math.floor((Math.random() * 15 + 3)) * box,
-    };
+  const foodImageSelect = document.getElementById("foodImage");
+  const selectedFoodImage = foodImageSelect.options[foodImageSelect.selectedIndex].value;
 
-    // Очистка обработчиков событий
-    document.removeEventListener("keydown", direction);
+  foodImageSrc = selectedFoodImage;
+  const img = new Image();
+  img.src = foodImageSrc;
 
-    // Рисование змеи после сброса
-    drawGame();
+  // Устанавливаем новое изображение еды на поле
+  ctx.clearRect(food.x, food.y, box, box);
+  ctx.drawImage(img, food.x, food.y);
 
-    // Сброс интервала
-    clearInterval(game);
+  initializeGame();
+}
 
-    // Перезапуск обработчика событий клавиш
-    document.addEventListener("keydown", direction);
-
-    // Запуск новой игры
-    game = setInterval(drawGame, 100);
+function initializeGame() {
+  const playerName = document.getElementById("playerName").value;
+  if (!playerName) {
+    alert("Пожалуйста, введите ваше имя.");
+    return;
   }
+
+  document.getElementById("menu").style.display = "none"; // Скрываем меню
+  document.getElementById("game").style.display = "block"; // Отображаем игру
+
+  // Сброс переменных
+  score = 0;
+  snake = [];
+  snake[0] = {
+    x: 9 * box,
+    y: 10 * box
+  };
+
+  dir = undefined;
+
+  food = {
+    x: Math.floor((Math.random() * 17 + 1)) * box,
+    y: Math.floor((Math.random() * 15 + 3)) * box,
+  };
+
+  // Очистка обработчиков событий
+  document.removeEventListener("keydown", direction);
+
+  // Рисование змеи после сброса
+  drawGame();
+
+  // Сброс интервала
+  clearInterval(game);
+
+  // Перезапуск обработчика событий клавиш
+  document.addEventListener("keydown", direction);
+
+  // Запуск новой игры
+  game = setInterval(drawGame, 100);
 }
 
 // Рисование змеи в начале

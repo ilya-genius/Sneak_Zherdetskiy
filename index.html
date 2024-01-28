@@ -8,6 +8,25 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="menu">
+    <label for="headColor">Выберите цвет головы змеи:</label>
+    <input type="color" id="headColor" value="#00ff00">
+    <br>
+    <label for="bodyColor">Выберите цвет туловища змеи:</label>
+    <input type="color" id="bodyColor" value="#ff0000">
+    <br>
+    <label for="foodImage">Выберите вид еды:</label>
+    <select id="foodImage">
+      <option value="img/food.png">Яйцо</option>
+      <option value="img/food1.png">Птица</option>
+      <option value="img/food2.png">Грызун</option>
+    </select>
+    <br>
+    <label for="playerName">Введите ваше имя:</label>
+    <input type="text" id="playerName">
+    <br>
+    <button type="button" onclick="startGame()">Начать игру</button>
+  </div>
   <canvas id="game" width="608" height="608"></canvas>
   <script src="js/script.js"></script>
 </body>
