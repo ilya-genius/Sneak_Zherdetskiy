@@ -9,6 +9,7 @@ let score = 0;
 let headColor = "#00ff00"; // Default head color
 let bodyColor = "#ff0000"; // Default body color
 let foodImageSrc = "img/food.png"; // Default food image
+let isGameStarted = false;
 
 let food = {
   x: Math.floor((Math.random() * 17 + 1)) * box,
@@ -18,7 +19,7 @@ let food = {
 let snake = [];
 snake[0] = {
   x: 9 * box,
-  y: 10 * box
+  y: 10 * box,
 };
 
 let foodImg = new Image(); // Добавлено изображение для еды
@@ -31,14 +32,11 @@ document.addEventListener("keydown", direction);
 let dir;
 
 function direction(event) {
-  if (event.keyCode == 37 && dir != "right")
-    dir = "left";
-  else if (event.keyCode == 38 && dir != "down")
-    dir = "up";
-  else if (event.keyCode == 39 && dir != "left")
-    dir = "right";
-  else if (event.keyCode == 40 && dir != "up")
-    dir = "down";
+  if (!isGameStarted) return;
+  if (event.keyCode == 37 && dir != "right") dir = "left";
+  else if (event.keyCode == 38 && dir != "down") dir = "up";
+  else if (event.keyCode == 39 && dir != "left") dir = "right";
+  else if (event.keyCode == 40 && dir != "up") dir = "down";
 }
 
 function initializeCanvasAndFood() {
@@ -60,13 +58,14 @@ document.getElementById("headColor").addEventListener("input", function () {
 document.getElementById("foodImage").addEventListener("change", function () {
   foodImageSrc = this.value; // Обновляем значение еды при изменении в выпадающем списке
   foodImg.src = foodImageSrc; // Обновляем изображение еды
-  initializeCanvasAndFood();
+  foodImg.onload = function () {
+    initializeCanvasAndFood();
+  };
 });
 
 function eatTail(head, arr) {
   for (let i = 0; i < arr.length; i++) {
-    if (head.x == arr[i].x && head.y == arr[i].y)
-      clearInterval(game);
+    if (head.x == arr[i].x && head.y == arr[i].y) clearInterval(game);
   }
 }
 
@@ -101,15 +100,20 @@ function drawGame() {
   for (let i = 1; i < snake.length; i++) {
     if (snakeX == snake[i].x && snakeY == snake[i].y) {
       clearInterval(game);
-      alert("Игра окончена. Ваш счет: " + score);
+      // alert("Игра окончена. Ваш счет: " + score);
       restartGame(); // Вызов функции рестарта
       return; // Добавленный код для предотвращения дальнейших операций при завершении игры
     }
   }
 
-  if (snakeX < box || snakeX > box * 17 || snakeY < 3 * box || snakeY > box * 17) {
+  if (
+    snakeX < box ||
+    snakeX > box * 17 ||
+    snakeY < 3 * box ||
+    snakeY > box * 17
+  ) {
     clearInterval(game);
-    alert("Игра окончена. Ваш счет: " + score);
+    // alert("Игра окончена. Ваш счет: " + score);
     restartGame(); // Вызов функции рестарта
     return; // Добавленный код для предотвращения дальнейших операций при завершении игры
   }
@@ -121,7 +125,7 @@ function drawGame() {
 
   let newHead = {
     x: snakeX,
-    y: snakeY
+    y: snakeY,
   };
 
   // Проверка на выход за границы поля
@@ -134,59 +138,111 @@ function drawGame() {
 }
 
 function restartGame() {
-  initializeGame();
+  const restartConfirm = confirm(
+    "Игра окончена. Ваш счет: " + score + "\nЖелаете начать заново?"
+  );
+  if (restartConfirm) {
+    // Сброс переменных
+    score = 0;
+    snake = [];
+    snake[0] = {
+      x: 9 * box,
+      y: 10 * box
+    };
+
+    dir = undefined;
+
+    food = {
+      x: Math.floor((Math.random() * 17 + 1)) * box,
+      y: Math.floor((Math.random() * 15 + 3)) * box,
+    };
+
+    // Очистка обработчиков событий
+    document.removeEventListener("keydown", direction);
+
+    // Рисование змеи после сброса
+    drawGame();
+
+    // Сброс интервала
+    clearInterval(game);
+
+    // Перезапуск обработчика событий клавиш
+    document.addEventListener("keydown", direction);
+
+    // Запуск новой игры
+    game = setInterval(drawGame, 100);
+  } else {
+    // If the user chooses not to restart, reset to menu
+    resetGame(); // Function to reset the game state
+  }
+}
+
+function resetGame() {
+  isGameStarted = false;
+  document.getElementById("menu").style.display = "block"; // Display menu
+
+  // Reset all variables
+  score = 0;
+  snake = [];
+  snake[0] = {
+    x: 9 * box,
+    y: 10 * box,
+  };
+
+  dir = undefined;
+
+  
+  food = {
+    x: Math.floor((Math.random() * 17 + 1)) * box,
+    y: Math.floor((Math.random() * 15 + 3)) * box,
+  };
+
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  initializeCanvasAndFood();
 }
 
 function startGame() {
-  bodyColor = document.getElementById("bodyColor").value;
-
-  const foodImageSelect = document.getElementById("foodImage");
-  const selectedFoodImage = foodImageSelect.options[foodImageSelect.selectedIndex].value;
-
-  foodImageSrc = selectedFoodImage;
-  const img = new Image();
-  img.src = foodImageSrc;
-
-  // Устанавливаем новое изображение еды на поле
-  ctx.clearRect(food.x, food.y, box, box);
-  ctx.drawImage(img, food.x, food.y);
-
-  initializeGame();
-}
-
-function initializeGame() {
   const playerName = document.getElementById("playerName").value;
   if (!playerName) {
     alert("Пожалуйста, введите ваше имя.");
     return;
   }
+  isGameStarted = true;
+  bodyColor = document.getElementById("bodyColor").value;
+
+  const foodImageSelect = document.getElementById("foodImage");
+  const selectedFoodImage =
+    foodImageSelect.options[foodImageSelect.selectedIndex].value;
+
+  foodImageSrc = selectedFoodImage;
+  const img = new Image();
+
+  // Добавлен обработчик события onload для изображения еды
+  img.onload = function () {
+    // Очистим холст перед отрисовкой нового изображения еды
+    ctx.clearRect(food.x, food.y, box, box);
+    ctx.drawImage(img, food.x, food.y, box, box); // Используем drawImage для прозрачного фона
+
+    initializeGame();
+  };
+
+  img.src = foodImageSrc;
+}
+
+function initializeGame() {
 
   document.getElementById("menu").style.display = "none"; // Скрываем меню
   document.getElementById("game").style.display = "block"; // Отображаем игру
 
-  // Сброс переменных
-  score = 0;
-  snake = [];
-  snake[0] = {
-    x: 9 * box,
-    y: 10 * box
-  };
-
-  dir = undefined;
-
-  food = {
-    x: Math.floor((Math.random() * 17 + 1)) * box,
-    y: Math.floor((Math.random() * 15 + 3)) * box,
-  };
+  // Сброс интервала
+  clearInterval(game);
 
   // Очистка обработчиков событий
   document.removeEventListener("keydown", direction);
 
   // Рисование змеи после сброса
   drawGame();
-
-  // Сброс интервала
-  clearInterval(game);
 
   // Перезапуск обработчика событий клавиш
   document.addEventListener("keydown", direction);
