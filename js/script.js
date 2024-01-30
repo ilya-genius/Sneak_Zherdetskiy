@@ -4,12 +4,22 @@ const ctx = canvas.getContext("2d");
 const ground = new Image();
 ground.src = "img/ground.png";
 
+const soundImg = new Image();
+soundImg.src = "img/mute_sound.png";
+const soundImgX = 550
+const soundImgY = 43
+
+const collisionSound = document.getElementById("collisionSound");
+const eatSound = document.getElementById("eatSound");
+const moveSound = document.getElementById("moveSound");
+
 let box = 32;
 let score = 0;
 let headColor = "#00ff00"; // Default head color
 let bodyColor = "#ff0000"; // Default body color
 let foodImageSrc = "img/food.png"; // Default food image
 let isGameStarted = false;
+let isSoundEnabled = false;
 
 let food = {
   x: Math.floor((Math.random() * 17 + 1)) * box,
@@ -29,14 +39,45 @@ let game; // Объявление переменной для интервала
 
 document.addEventListener("keydown", direction);
 
+canvas.addEventListener("click", function(event) {
+  const clickX = event.clientX - canvas.getBoundingClientRect().left;
+  const clickY = event.clientY - canvas.getBoundingClientRect().top;
+
+  // Проверяем, что клик был в пределах координат изображения звука
+  if (
+    clickX >= soundImgX &&
+    clickX <= soundImgX + soundImg.width &&
+    clickY >= soundImgY &&
+    clickY <= soundImgY + soundImg.height
+  ) {
+    toggleSound();
+  }
+});
+
 let dir;
 
 function direction(event) {
   if (!isGameStarted) return;
-  if (event.keyCode == 37 && dir != "right") dir = "left";
-  else if (event.keyCode == 38 && dir != "down") dir = "up";
-  else if (event.keyCode == 39 && dir != "left") dir = "right";
-  else if (event.keyCode == 40 && dir != "up") dir = "down";
+  moveSound.pause()
+  moveSound.currentTime = 0;
+  
+  // Сохраняем текущее направление
+  const prevDir = dir;
+
+  if (event.keyCode == 37 && dir != "right") {
+    dir = "left";
+  } else if (event.keyCode == 38 && dir != "down") {
+    dir = "up";
+  } else if (event.keyCode == 39 && dir != "left") {
+    dir = "right";
+  } else if (event.keyCode == 40 && dir != "up") {
+    dir = "down";
+  }
+
+  // Если направление изменилось, проигрываем звук
+  if (dir !== prevDir && isSoundEnabled) {
+    moveSound.play();
+  }
 }
 
 function initializeCanvasAndFood() {
@@ -74,6 +115,8 @@ function eatTail(head, arr) {
 
 function drawGame() {
   ctx.drawImage(ground, 0, 0);
+  
+  ctx.drawImage(soundImg, soundImgX, soundImgY, 32, 32);
 
   ctx.drawImage(foodImg, food.x, food.y);
 
@@ -95,6 +138,7 @@ function drawGame() {
       x: Math.floor((Math.random() * 17 + 1)) * box,
       y: Math.floor((Math.random() * 15 + 3)) * box,
     };
+    if (isSoundEnabled){eatSound.play();}
   } else {
     snake.pop();
   }
@@ -102,6 +146,7 @@ function drawGame() {
   // Проверка на столкновение с самой собой
   for (let i = 1; i < snake.length; i++) {
     if (snakeX == snake[i].x && snakeY == snake[i].y) {
+      if (isSoundEnabled){collisionSound.play();}
       clearInterval(game);
       restartGame(); // Вызов функции рестарта
       return;
@@ -114,6 +159,7 @@ function drawGame() {
     snakeY < 3 * box ||
     snakeY > box * 17
   ) {
+    if (isSoundEnabled){collisionSound.play();}
     clearInterval(game);
     restartGame(); // Вызов функции рестарта
     return;
@@ -224,6 +270,16 @@ function initializeGame() {
   drawGame();
   document.addEventListener("keydown", direction);
   game = setInterval(drawGame, 100);
+}
+
+function toggleSound() {
+  if (isSoundEnabled) {
+      soundImg.src = "img/mute_sound.png"
+  } else {
+    soundImg.src = "img/sound.png"
+  }
+  
+  isSoundEnabled = !isSoundEnabled;
 }
 
 function updateScoreboard() {
