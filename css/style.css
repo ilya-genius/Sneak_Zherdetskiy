@@ -8,3 +8,57 @@ canvas {
   text-align: center;
   margin-top: 50px;
 }
+
+#scoreboard {
+  position: absolute;
+  top: 50px;
+  right: 20px;
+  background-color: #000;
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+#scoreboard h2 {
+  text-align: center;
+}
+
+#records-table {
+  width: 100%;
+  font-style: italic;
+  border-collapse: collapse; /* Объединение границ ячеек */
+}
+
+#records-table th,
+#records-table td {
+  padding: 8px;
+  border-bottom: 1px solid #555;
+}
+
+#records-table th {
+  text-align: left;
+  padding-right: 20px; /* Увеличение места между Никнеймом и Счетом */
+}
+
+#records-table td:first-child,
+#records-table td:nth-child(2) {
+  text-align: left;
+  padding-right: 10px;
+}
+
+#records-table td:nth-child(3) {
+  padding-right: 50px; /* Добавление большего места между Никнеймом и Счетом */
+}
+
+@media (max-width: 1024px) {
+  #scoreboard {
+    position: relative;
+    top: 20px;
+    right: 0px;
+    margin-top: 20px;
+  }
+
+  #records-table td {
+    padding: 6px;
+  }
+}

@@ -48,7 +48,10 @@ function initializeCanvasAndFood() {
 }
 
 // Вызываем функцию инициализации сразу после загрузки страницы
-window.onload = initializeCanvasAndFood;
+window.onload = function () {
+  initializeCanvasAndFood();
+  updateScoreboard(); // Загрузка таблицы рекордов при загрузке страницы
+};
 
 document.getElementById("headColor").addEventListener("input", function () {
   headColor = this.value;
@@ -100,9 +103,8 @@ function drawGame() {
   for (let i = 1; i < snake.length; i++) {
     if (snakeX == snake[i].x && snakeY == snake[i].y) {
       clearInterval(game);
-      // alert("Игра окончена. Ваш счет: " + score);
       restartGame(); // Вызов функции рестарта
-      return; // Добавленный код для предотвращения дальнейших операций при завершении игры
+      return;
     }
   }
 
@@ -113,9 +115,8 @@ function drawGame() {
     snakeY > box * 17
   ) {
     clearInterval(game);
-    // alert("Игра окончена. Ваш счет: " + score);
     restartGame(); // Вызов функции рестарта
-    return; // Добавленный код для предотвращения дальнейших операций при завершении игры
+    return;
   }
 
   if (dir == "left") snakeX -= box;
@@ -138,16 +139,16 @@ function drawGame() {
 }
 
 function restartGame() {
+  saveScore(document.getElementById("playerName").value, score);
   const restartConfirm = confirm(
     "Игра окончена. Ваш счет: " + score + "\nЖелаете начать заново?"
   );
   if (restartConfirm) {
-    // Сброс переменных
     score = 0;
     snake = [];
     snake[0] = {
       x: 9 * box,
-      y: 10 * box
+      y: 10 * box,
     };
 
     dir = undefined;
@@ -157,31 +158,23 @@ function restartGame() {
       y: Math.floor((Math.random() * 15 + 3)) * box,
     };
 
-    // Очистка обработчиков событий
     document.removeEventListener("keydown", direction);
 
-    // Рисование змеи после сброса
     drawGame();
 
-    // Сброс интервала
     clearInterval(game);
 
-    // Перезапуск обработчика событий клавиш
     document.addEventListener("keydown", direction);
 
-    // Запуск новой игры
     game = setInterval(drawGame, 100);
   } else {
-    // If the user chooses not to restart, reset to menu
-    resetGame(); // Function to reset the game state
+    resetGame();
   }
 }
 
 function resetGame() {
   isGameStarted = false;
-  document.getElementById("menu").style.display = "block"; // Display menu
-
-  // Reset all variables
+  document.getElementById("menu").style.display = "block";
   score = 0;
   snake = [];
   snake[0] = {
@@ -191,13 +184,11 @@ function resetGame() {
 
   dir = undefined;
 
-  
   food = {
     x: Math.floor((Math.random() * 17 + 1)) * box,
     y: Math.floor((Math.random() * 15 + 3)) * box,
   };
 
-  // Clear the canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   initializeCanvasAndFood();
 }
@@ -217,38 +208,65 @@ function startGame() {
 
   foodImageSrc = selectedFoodImage;
   const img = new Image();
-
-  // Добавлен обработчик события onload для изображения еды
   img.onload = function () {
-    // Очистим холст перед отрисовкой нового изображения еды
     ctx.clearRect(food.x, food.y, box, box);
-    ctx.drawImage(img, food.x, food.y, box, box); // Используем drawImage для прозрачного фона
-
+    ctx.drawImage(img, food.x, food.y, box, box);
     initializeGame();
   };
-
   img.src = foodImageSrc;
 }
 
 function initializeGame() {
-
-  document.getElementById("menu").style.display = "none"; // Скрываем меню
-  document.getElementById("game").style.display = "block"; // Отображаем игру
-
-  // Сброс интервала
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("game").style.display = "block";
   clearInterval(game);
-
-  // Очистка обработчиков событий
   document.removeEventListener("keydown", direction);
-
-  // Рисование змеи после сброса
   drawGame();
-
-  // Перезапуск обработчика событий клавиш
   document.addEventListener("keydown", direction);
-
-  // Запуск новой игры
   game = setInterval(drawGame, 100);
+}
+
+function updateScoreboard() {
+  const recordsTable = document.getElementById("records-table");
+  recordsTable.innerHTML = ""; // Очищаем предыдущие записи
+
+  const scores = JSON.parse(localStorage.getItem("snakeScores")) || [];
+
+  scores.forEach((record, index) => {
+    const row = recordsTable.insertRow();
+    const cell1 = row.insertCell(0);
+    const cell2 = row.insertCell(1);
+    const cell3 = row.insertCell(2);
+    const cell4 = row.insertCell(3);
+
+    cell1.textContent = `${index + 1}`;
+    cell2.textContent = record.name;
+    cell3.textContent = ""; // Добавление точек между Никнеймом и Счетом
+    cell4.textContent = record.score;
+  });
+}
+
+function saveScore(playerName, score) {
+  const scores = JSON.parse(localStorage.getItem("snakeScores")) || [];
+
+  const existingScoreIndex = scores.findIndex(
+    (record) => record.name === playerName
+  );
+
+  if (existingScoreIndex !== -1) {
+    if (score > scores[existingScoreIndex].score) {
+      scores[existingScoreIndex].score = score;
+    }
+  } else {
+    scores.push({ name: playerName, score: score });
+  }
+
+  scores.sort((a, b) => b.score - a.score);
+  scores.splice(5);
+
+  localStorage.setItem("snakeScores", JSON.stringify(scores));
+
+  updateScoreboard();
 }
 
 // Рисование змеи в начале
