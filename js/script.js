@@ -39,6 +39,8 @@ let game; // Объявление переменной для интервала
 
 document.addEventListener("keydown", direction);
 
+document.addEventListener("keydown", toggleSoundOnKeyPress);
+
 canvas.addEventListener("click", function(event) {
   const clickX = event.clientX - canvas.getBoundingClientRect().left;
   const clickY = event.clientY - canvas.getBoundingClientRect().top;
@@ -53,6 +55,11 @@ canvas.addEventListener("click", function(event) {
     toggleSound();
   }
 });
+function toggleSoundOnKeyPress(event) {
+  if (event.keyCode === 77) {
+    toggleSound();
+  }
+}
 
 let dir;
 
@@ -237,6 +244,8 @@ function resetGame() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   initializeCanvasAndFood();
+  drawGame();
+  game = setInterval(drawGame, 100);
 }
 
 function startGame() {
