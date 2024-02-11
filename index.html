@@ -25,6 +25,19 @@
     <label for="playerName">Введите ваш никнейм:</label>
     <input type="text" id="playerName" maxlength="20">
     <br>
+    <label for="level">Уровень сложности:</label>
+    <div id="level">
+      <label>
+        <input type="radio" name="difficulty" value="easy" checked> Легкий
+      </label>
+      <label>
+        <input type="radio" name="difficulty" value="normal"> Нормальный
+      </label>
+      <label>
+        <input type="radio" name="difficulty" value="hard"> Сложный
+      </label>
+    </div>
+    <br>
     <button type="button" onclick="startGame()">Начать игру</button>
   </div>
   <canvas id="game" width="608" height="608"></canvas>

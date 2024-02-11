@@ -6,8 +6,13 @@ ground.src = "img/ground.png";
 
 const soundImg = new Image();
 soundImg.src = "img/mute_sound.png";
-const soundImgX = 550
-const soundImgY = 43
+const soundImgX = 550;
+const soundImgY = 43;
+
+const playPauseImg = new Image();
+playPauseImg.src = "img/pause.png";
+const playPauseImgX = 510;
+const playPauseImgY = 47;
 
 const collisionSound = document.getElementById("collisionSound");
 const eatSound = document.getElementById("eatSound");
@@ -20,6 +25,7 @@ let bodyColor = "#ff0000"; // Default body color
 let foodImageSrc = "img/food.png"; // Default food image
 let isGameStarted = false;
 let isSoundEnabled = false;
+let isPauseEnabled = false;
 
 let food = {
   x: Math.floor((Math.random() * 17 + 1)) * box,
@@ -54,10 +60,21 @@ canvas.addEventListener("click", function(event) {
   ) {
     toggleSound();
   }
+  if (
+    clickX >= playPauseImgX &&
+    clickX <= playPauseImgX + playPauseImg.width &&
+    clickY >= playPauseImgY &&
+    clickY <= playPauseImgY + playPauseImg.height
+  ){
+    pausePlay();
+  }
 });
 function toggleSoundOnKeyPress(event) {
   if (event.keyCode === 77) {
     toggleSound();
+  }
+  if (event.keyCode === 27) {
+    pausePlay();
   }
 }
 
@@ -65,7 +82,7 @@ let dir;
 
 function direction(event) {
   if (!isGameStarted) return;
-  moveSound.pause()
+  moveSound.pause();
   moveSound.currentTime = 0;
   
   // Сохраняем текущее направление
@@ -82,7 +99,7 @@ function direction(event) {
   }
 
   // Если направление изменилось, проигрываем звук
-  if (dir !== prevDir && isSoundEnabled) {
+  if (dir !== prevDir && isSoundEnabled && !isPauseEnabled) {
     moveSound.play();
   }
 }
@@ -125,6 +142,8 @@ function drawGame() {
   
   ctx.drawImage(soundImg, soundImgX, soundImgY, 32, 32);
 
+  ctx.drawImage(playPauseImg, playPauseImgX, playPauseImgY, 24, 24);
+
   ctx.drawImage(foodImg, food.x, food.y);
 
   for (let i = 0; i < snake.length; i++) {
@@ -135,6 +154,10 @@ function drawGame() {
   ctx.fillStyle = "black";
   ctx.font = "50px Arial";
   ctx.fillText(score, box * 8.75, box * 1.9);
+
+  if (isPauseEnabled) {
+    return;
+  }
 
   let snakeX = snake[0].x;
   let snakeY = snake[0].y;
@@ -283,12 +306,22 @@ function initializeGame() {
 
 function toggleSound() {
   if (isSoundEnabled) {
-      soundImg.src = "img/mute_sound.png"
+      soundImg.src = "img/mute_sound.png";
   } else {
-    soundImg.src = "img/sound.png"
+    soundImg.src = "img/sound.png";
   }
   
   isSoundEnabled = !isSoundEnabled;
+}
+
+function pausePlay(){
+  if (isPauseEnabled){
+    playPauseImg.src = "img/pause.png";
+  } else{
+    playPauseImg.src = "img/play.png";
+  }
+
+  isPauseEnabled = !isPauseEnabled;
 }
 
 function updateScoreboard() {
