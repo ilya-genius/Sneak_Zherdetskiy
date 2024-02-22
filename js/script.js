@@ -17,6 +17,7 @@ const playPauseImgY = 47;
 const collisionSound = document.getElementById("collisionSound");
 const eatSound = document.getElementById("eatSound");
 const moveSound = document.getElementById("moveSound");
+const levelDiv = document.getElementById("level");
 
 let box = 32;
 let score = 0;
@@ -26,6 +27,9 @@ let foodImageSrc = "img/food.png"; // Default food image
 let isGameStarted = false;
 let isSoundEnabled = false;
 let isPauseEnabled = false;
+let difficulty = "easy";
+let obstacle = [];
+let currentSpeed = 125;
 
 let food = {
   x: Math.floor((Math.random() * 17 + 1)) * box,
@@ -75,6 +79,41 @@ function toggleSoundOnKeyPress(event) {
   }
   if (event.keyCode === 27) {
     pausePlay();
+  }
+}
+
+levelDiv.addEventListener("change", function(event) {
+  const selectedDifficulty = event.target.value;
+  
+  setDifficulty(selectedDifficulty);
+});
+
+function setDifficulty(level) {
+  difficulty = level;
+  // Очистка массива препятствий
+  obstacle = [];
+  if (difficulty === "easy") {
+    currentSpeed = 125;
+  } else if (difficulty === "normal") {
+    currentSpeed = 100;
+    createObstacles(7);
+  } else if (difficulty === "hard") {
+    currentSpeed = 70;
+  }
+  console.log(currentSpeed);
+}
+
+function createObstacles(count) {
+  for (let i = 0; i < count; i++) {
+    let obstacleX, obstacleY;
+    do {
+      obstacleX = Math.floor(Math.random() * 17 + 1) * box;
+      obstacleY = Math.floor(Math.random() * 15 + 3) * box;
+    } while (
+      (obstacleX === food.x && obstacleY === food.y) || // Убедиться, что препятствие не находится на месте еды
+      (obstacleX === snake[0].x && obstacleY === snake[0].y) // Убедиться, что препятствие не находится на месте змейки
+    );
+    obstacle.push({ x: obstacleX, y: obstacleY });
   }
 }
 
@@ -146,6 +185,11 @@ function drawGame() {
 
   ctx.drawImage(foodImg, food.x, food.y);
 
+  ctx.fillStyle = "gray"; // Цвет статических препятствий
+  obstacle.forEach((obs) => {
+    ctx.fillRect(obs.x, obs.y, box, box);
+  });
+
   for (let i = 0; i < snake.length; i++) {
     ctx.fillStyle = i == 0 ? headColor : bodyColor;
     ctx.fillRect(snake[i].x, snake[i].y, box, box);
@@ -168,6 +212,11 @@ function drawGame() {
       x: Math.floor((Math.random() * 17 + 1)) * box,
       y: Math.floor((Math.random() * 15 + 3)) * box,
     };
+    if (difficulty === "hard") {
+      // Генерируем новые препятствия
+      obstacle = [];
+      createObstacles(Math.floor(Math.random() * 4) + 2);
+    }
     if (isSoundEnabled){eatSound.play();}
   } else {
     snake.pop();
@@ -179,6 +228,16 @@ function drawGame() {
       if (isSoundEnabled){collisionSound.play();}
       clearInterval(game);
       restartGame(); // Вызов функции рестарта
+      return;
+    }
+  }
+
+  // Проверка столкновения головы змеи с препятствиями
+  for (let i = 0; i < obstacle.length; i++) {
+    if (snakeX === obstacle[i].x && snakeY === obstacle[i].y) {
+      if (isSoundEnabled){collisionSound.play();}
+      clearInterval(game);
+      restartGame(); // Завершение игры
       return;
     }
   }
@@ -215,6 +274,9 @@ function drawGame() {
 }
 
 function restartGame() {
+  if (difficulty === "hard"){
+    obstacle = [];
+  }
   saveScore(document.getElementById("playerName").value, score);
   const restartConfirm = confirm(
     "Игра окончена. Ваш счет: " + score + "\nЖелаете начать заново?"
@@ -242,7 +304,7 @@ function restartGame() {
 
     document.addEventListener("keydown", direction);
 
-    game = setInterval(drawGame, 100);
+    game = setInterval(drawGame, currentSpeed);
   } else {
     resetGame();
   }
@@ -268,7 +330,7 @@ function resetGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   initializeCanvasAndFood();
   drawGame();
-  game = setInterval(drawGame, 100);
+  game = setInterval(drawGame, currentSpeed);
 }
 
 function startGame() {
@@ -301,7 +363,7 @@ function initializeGame() {
   document.removeEventListener("keydown", direction);
   drawGame();
   document.addEventListener("keydown", direction);
-  game = setInterval(drawGame, 100);
+  game = setInterval(drawGame, currentSpeed);
 }
 
 function toggleSound() {
@@ -371,4 +433,4 @@ function saveScore(playerName, score) {
 drawGame();
 
 // Запуск игры
-game = setInterval(drawGame, 100);
+game = setInterval(drawGame, currentSpeed);
