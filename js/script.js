@@ -117,6 +117,24 @@ function createObstacles(count) {
   }
 }
 
+function isFoodUnderObstacle() {
+  for (let i = 0; i < obstacle.length; i++) {
+    if (food.x === obstacle[i].x && food.y === obstacle[i].y) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function generateFoodCoordinates() {
+  let foodX, foodY;
+  do {
+    foodX = Math.floor((Math.random() * 17 + 1)) * box;
+    foodY = Math.floor((Math.random() * 15 + 3)) * box;
+  } while (isFoodUnderObstacle(foodX, foodY));
+  return { x: foodX, y: foodY };
+}
+
 let dir;
 
 function direction(event) {
@@ -208,10 +226,7 @@ function drawGame() {
 
   if (snakeX == food.x && snakeY == food.y) {
     score++;
-    food = {
-      x: Math.floor((Math.random() * 17 + 1)) * box,
-      y: Math.floor((Math.random() * 15 + 3)) * box,
-    };
+    food = generateFoodCoordinates();
     if (difficulty === "hard") {
       // Генерируем новые препятствия
       obstacle = [];
@@ -291,10 +306,7 @@ function restartGame() {
 
     dir = undefined;
 
-    food = {
-      x: Math.floor((Math.random() * 17 + 1)) * box,
-      y: Math.floor((Math.random() * 15 + 3)) * box,
-    };
+    food = generateFoodCoordinates();
 
     document.removeEventListener("keydown", direction);
 
@@ -311,6 +323,11 @@ function restartGame() {
 }
 
 function resetGame() {
+  const instructionsList = document.querySelector("#instructions ul");
+  const itemsToRemove = instructionsList.querySelectorAll("li:nth-last-child(-n+2)");
+  itemsToRemove.forEach(item => {
+    instructionsList.removeChild(item);
+  });
   isGameStarted = false;
   document.getElementById("menu").style.display = "block";
   score = 0;
@@ -322,10 +339,7 @@ function resetGame() {
 
   dir = undefined;
 
-  food = {
-    x: Math.floor((Math.random() * 17 + 1)) * box,
-    y: Math.floor((Math.random() * 15 + 3)) * box,
-  };
+  food = generateFoodCoordinates();
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   initializeCanvasAndFood();
@@ -339,6 +353,26 @@ function startGame() {
     alert("Пожалуйста, введите ваше имя.");
     return;
   }
+
+  const instructionsList = document.querySelector("#instructions ul");
+  const playerNameItem = document.createElement("li");
+  playerNameItem.innerHTML = `<strong>Никнейм:</strong> ${playerName}`;
+  instructionsList.appendChild(playerNameItem);
+
+  diffic_ru = "Легкий";
+  if (difficulty === "easy"){
+    diffic_ru = "Легкий";
+  }
+  else if (difficulty === "normal"){
+    diffic_ru = "Нормальный";
+  }
+  else{
+    diffic_ru = "Сложный";
+  }
+  const difficultyItem = document.createElement("li");
+  difficultyItem.innerHTML = `<strong>Уровень сложности:</strong> ${diffic_ru}`;
+  instructionsList.appendChild(difficultyItem);
+
   isGameStarted = true;
   bodyColor = document.getElementById("bodyColor").value;
 

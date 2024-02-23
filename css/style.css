@@ -62,3 +62,38 @@ canvas {
     padding: 6px;
   }
 }
+
+#instructions {
+  position: absolute;
+  top: 50px;
+  left: 20px;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+#instructions h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#instructions ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+#instructions ul li {
+  margin-bottom: 5px;
+}
+
+#instructions ul li strong {
+  font-weight: bold;
+}
+
+@media (max-width: 1024px) {
+  #instructions {
+    position: static;
+    margin-top: 20px; 
+    border-radius: 0; 
+  }
+}
