@@ -52,10 +52,7 @@ canvas {
 
 @media (max-width: 1024px) {
   #scoreboard {
-    position: relative;
-    top: 20px;
-    right: 0px;
-    margin-top: 20px;
+    display: none;
   }
 
   #records-table td {
@@ -78,22 +75,24 @@ canvas {
 }
 
 #instructions ul {
+  columns: 3;
+  -webkit-columns: 3;
+  -moz-columns: 3;
   list-style-type: none;
   padding: 0;
 }
 
 #instructions ul li {
   margin-bottom: 5px;
+  break-inside: avoid-column;
 }
 
 #instructions ul li strong {
   font-weight: bold;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1550px) {
   #instructions {
-    position: static;
-    margin-top: 20px; 
-    border-radius: 0; 
+    display: none;
   }
 }
